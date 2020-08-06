@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
+import 'bean/top_article_bean_entity.dart';
+
 class ItemPage extends StatefulWidget {
+
+  TopArticleBeanData _article;
+
   @override
   State<StatefulWidget> createState() {
     return ItemPageState();
   }
+
+  ItemPage(this._article);
 }
 
 class ItemPageState extends State<ItemPage> {
@@ -24,7 +31,7 @@ class ItemPageState extends State<ItemPage> {
                   children: <Widget>[
                     //文本描述
                     Container(
-                        child: Text("我是 Flutter 哈哈哈！！！",
+                        child: Text(widget._article.title,
                             style:
                                 TextStyle(color: Colors.black, fontSize: 14.0),
                             maxLines: 3,
@@ -36,9 +43,9 @@ class ItemPageState extends State<ItemPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        _getBottomItem(Icons.star, "点赞"),
-                        _getBottomItem(Icons.link, "链接"),
-                        _getBottomItem(Icons.subway, "地铁")
+                        _getBottomItem(Icons.star, widget._article.author),
+                        _getBottomItem(Icons.link, widget._article.chapterName),
+                        _getBottomItem(Icons.subway, widget._article.niceDate)
                       ],
                     )
                   ],
@@ -48,7 +55,8 @@ class ItemPageState extends State<ItemPage> {
   }
 
   void _itemClick() {
-    print("点击了哈哈哈！！！");
+
+    print("跳转到${widget._article.link}");
   }
 
   _getBottomItem(IconData icon, String text) {
