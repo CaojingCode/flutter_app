@@ -2,29 +2,46 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app/bean/banner_baen_entity.dart';
+import 'package:flutter_app/bean/base_bean.dart';
 import 'package:flutter_app/bean/top_article_bean_entity.dart';
 import 'package:flutter_app/http/dioinit.dart';
 import 'package:flutter_app/view/BannerView.dart';
+import 'package:flutter_app/widget/navigation_widget.dart';
+import 'package:flutter_app/widget/system_widget.dart';
 
+import 'base_widget.dart';
+import 'bean/banner_baen_entity.dart';
+import 'bean/top_article_bean_entity.dart';
 import 'itempage.dart';
+import 'utils/utils.dart';
+import 'widget/article_list_widget.dart';
 
-class TabBarPageFirst extends StatefulWidget {
+class TabBarPageFirst extends BaseWidget {
   @override
-  State<StatefulWidget> createState() {
+  BaseWidgetState getState() {
     return TabBarPageFirstState();
   }
 }
 
-class TabBarPageFirstState extends State<TabBarPageFirst>
-    with AutomaticKeepAliveClientMixin {
-  List<String> _images = [];
-  List<TopArticleBeanData> _articles=[];
+class TabBarPageFirstState extends BaseWidgetState<TabBarPageFirst> {
+  List<BannerBaenData> _banners = [];
+  List<TopArticleBeanData> _articles = [];
+  TopArticleBeanEntity topArticleBeanEntity = TopArticleBeanEntity();
+
+  final List<String> menus = ["文章", "体系", "导航", "广场"];
 
   @override
-  // ignore: missing_return
-  Future<void> initState()  {
-    super.initState();
+  BaseBean get baseBean => topArticleBeanEntity;
+
+  @override
+  Widget buildBody() {
+    return updateTopArticles();
+  }
+
+  @override
+  initData() {
     getBanner();
     getTopArticle();
   }
@@ -39,52 +56,86 @@ class TabBarPageFirstState extends State<TabBarPageFirst>
       ///轮播图实体解析
       BannerBaenEntity bannerEntity =
           BannerBaenEntity().fromJson(jsonDecode(responseBanner.toString()));
-      List<BannerBaenData> bannerData = bannerEntity.data;
-      for (int i = 0; i < bannerData.length; i++) {
-        _images.add(bannerData[i].imagePath);
-      }
-
-
+      _banners = bannerEntity.data;
     });
   }
 
   ///置顶文章
   getTopArticle() async {
     ///置顶文章接口请求
-    Response responseTopArticle = await dio.get("article/top/json");
-    ///接口调用成功后更新数据需要调用setState()方法
-    setState(() {
-      ///置顶文章实体解析
-      TopArticleBeanEntity topArticleBeanEntity = TopArticleBeanEntity()
-          .fromJson(jsonDecode(responseTopArticle.toString()));
-      _articles= topArticleBeanEntity.data;
+    await dio.get("article/top/json").then((value) {
+      ///接口调用成功后更新数据需要调用setState()方法
+      setState(() {
+        ///置顶文章实体解析
+        topArticleBeanEntity =
+            TopArticleBeanEntity().fromJson(jsonDecode(value.toString()));
+        _articles = topArticleBeanEntity.data;
+        if (_articles.length == 0) {
+          topArticleBeanEntity.state = ViewState.empty;
+        } else {
+          topArticleBeanEntity.state = ViewState.idle;
+        }
+      });
+    }).catchError((onError) {
+      setState(() {
+        topArticleBeanEntity.state = ViewState.error;
+        print("请求失败了:$onError");
+      });
     });
   }
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            BannerView(
-              _images,
-              curve: Curves.bounceIn,
-            ),
-            Expanded(
-                child: ListView.builder(
-              itemBuilder: (context, index) {
-                return new ItemPage(_articles[index]);
-              },
-              itemCount: _articles.length,
-            ))
-          ],
-        ));
+  Widget updateBanner() {
+    return BannerView(
+      _banners,
+      curve: Curves.bounceIn,
+    );
   }
 
-  //通过with AutomaticKeepAliveClientMixin ，然后重写 @override bool get wantKeepAlive => true; ，就可以实不重新构建的效果了
-  @override
-  bool get wantKeepAlive => true;
+  Widget updateTopArticles() {
+    return CustomScrollView(slivers: <Widget>[
+      SliverToBoxAdapter(child: updateBanner()),
+      SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4, //Grid按两列显示
+            mainAxisSpacing: 5.0,
+            crossAxisSpacing: 5.0,
+            childAspectRatio: 1.2,
+          ),
+          delegate:
+              SliverChildBuilderDelegate((BuildContext context, int index) {
+            return InkWell(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.image,
+                        color: Colors.green,
+                        size: 45,
+                      ),
+                      Text(menus[index])
+                    ]),
+                onTap: () {
+                  if (index == 0) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+                      return ArticleListWidget();
+                    }));
+                  } else if (index == 1) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+                      return SystemWidget();
+                    }));
+                  } else if (index == 2) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+                      return NavigationWidget();
+                    }));
+                  }
+                });
+          }, childCount: 4)),
+      SliverList(
+          delegate:
+              SliverChildBuilderDelegate((BuildContext context, int index) {
+        return ItemPage(_articles[index]);
+      }, childCount: _articles.length))
+    ]);
+  }
 }

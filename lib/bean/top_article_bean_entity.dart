@@ -1,6 +1,7 @@
+import 'package:flutter_app/bean/base_bean.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
-class TopArticleBeanEntity with JsonConvert<TopArticleBeanEntity> {
+class TopArticleBeanEntity  with JsonConvert<TopArticleBeanEntity> ,BaseBean{
 	List<TopArticleBeanData> data;
 	int errorCode;
 	String errorMsg;

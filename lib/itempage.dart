@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'bean/top_article_bean_entity.dart';
+import 'view/webview_page.dart';
 
 class ItemPage extends StatefulWidget {
-
   TopArticleBeanData _article;
 
   @override
@@ -15,12 +16,14 @@ class ItemPage extends StatefulWidget {
 }
 
 class ItemPageState extends State<ItemPage> {
+
   @override
   Widget build(BuildContext context) {
     return Container(
       //卡片包装
       child: new Card(
-        margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 10.0,bottom: 10.0),
+          margin:
+              EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0, bottom: 10.0),
           child: FlatButton(
               onPressed: _itemClick,
               child: Padding(
@@ -42,6 +45,8 @@ class ItemPageState extends State<ItemPage> {
                     //3个平均分配的图标文字
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
                         _getBottomItem(Icons.star, widget._article.author),
                         _getBottomItem(Icons.link, widget._article.chapterName),
@@ -55,8 +60,9 @@ class ItemPageState extends State<ItemPage> {
   }
 
   void _itemClick() {
-
-    print("跳转到${widget._article.link}");
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+      return WebViewPage(widget._article.link,widget._article.title);
+    }));
   }
 
   _getBottomItem(IconData icon, String text) {
@@ -67,9 +73,7 @@ class ItemPageState extends State<ItemPage> {
       child: Center(
         child: Row(
           ///主轴居中,即是横向居中
-          mainAxisAlignment: MainAxisAlignment.center,
-          //大小按照最大充满
-          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
           //竖向也居中
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
@@ -79,13 +83,13 @@ class ItemPageState extends State<ItemPage> {
               size: 16.0,
               color: Colors.grey,
             ),
-            Padding(padding: EdgeInsets.only(left: 5.0)),
-            Text(
+
+            Expanded(
+                child: Text(
               text,
               style: TextStyle(color: Colors.grey, fontSize: 14.0),
               overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            )
+            ))
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter_app/bean/top_article_bean_entity.dart';
+import 'package:flutter_app/bean/base_bean.dart';
 
 topArticleBeanEntityFromJson(TopArticleBeanEntity data, Map<String, dynamic> json) {
 	if (json['data'] != null) {

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/http/dioinit.dart';
 import 'package:flutter_app/tabbar_widget.dart';
@@ -40,6 +41,7 @@ class MainPageState extends State<MainPageWidget>
         controller: tabController,
         //TabBarView 默认支持手势滑动，若要禁止设置 NeverScrollableScrollPhysics
         physics: NeverScrollableScrollPhysics(),
+        dragStartBehavior: DragStartBehavior.start,
       ),
       bottomNavigationBar: Material(
         color: Colors.blue,

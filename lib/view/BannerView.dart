@@ -2,22 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../bean/banner_baen_entity.dart';
+import 'webview_page.dart';
+
 /// 自定义Banner轮播图
 class BannerView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => BannerViewState();
 
-  final List<String> _images;
+  final List<BannerBaenData> _banners;
   final double height;
   final ValueChanged<int> onTap;
   final Curve curve;
 
   BannerView(
-    this._images, {
+    this._banners, {
     this.height = 200,
     this.onTap,
     this.curve = Curves.linear,
-  }) : assert(_images != null);
+  }) : assert(_banners != null);
 }
 
 class BannerViewState extends State<BannerView> {
@@ -28,8 +31,8 @@ class BannerViewState extends State<BannerView> {
   @override
   void initState() {
     super.initState();
-    _curIndex = widget._images.length * 5;
-    _pageController = PageController(initialPage: _curIndex);
+    _curIndex = widget._banners.length * 5;
+    _pageController = PageController(initialPage: _curIndex,keepPage: false);
     _initTimer();
   }
 
@@ -42,7 +45,7 @@ class BannerViewState extends State<BannerView> {
   }
 
   Widget _buildPageView() {
-    var length = widget._images.length;
+    var length = widget._banners.length;
     return Container(
       height: widget.height,
       child: PageView.builder(
@@ -61,16 +64,14 @@ class BannerViewState extends State<BannerView> {
             onPanDown: (details) {
               _cancelTimer();
             },
+
             onTap: () {
-              Scaffold.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('当前 page 为 ${index % length}'),
-                  duration: Duration(milliseconds: 500),
-                ),
-              );
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+                return WebViewPage(widget._banners[index%length].url,widget._banners[index%length].title);
+              }));
             },
             child: Image.network(
-              widget._images[index % length],
+              widget._banners[index % length].imagePath,
               fit: BoxFit.cover,
             ),
           );
@@ -80,18 +81,18 @@ class BannerViewState extends State<BannerView> {
   }
 
   Widget _buildIndicator() {
-    var length = widget._images.length;
+    var length = widget._banners.length;
     return Positioned(
       bottom: 10,
       child: Row(
-        children: widget._images.map((s) {
+        children: widget._banners.map((s) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3.0),
             child: ClipOval(
               child: Container(
                 width: 8,
                 height: 8,
-                color: s == widget._images[_curIndex % length]
+                color: s == widget._banners[_curIndex % length]
                     ? Colors.white
                     : Colors.grey,
               ),
@@ -116,11 +117,13 @@ class BannerViewState extends State<BannerView> {
     if (_timer == null) {
       _timer = Timer.periodic(Duration(seconds: 3), (t) {
         _curIndex++;
-        _pageController.animateToPage(
-          _curIndex,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.linear,
-        );
+        if(_pageController.hasClients) {
+          _pageController.animateToPage(
+            _curIndex,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.linear,
+          );
+        }
       });
     }
   }

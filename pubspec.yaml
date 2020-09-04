@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -22,6 +22,9 @@ dependencies:
   cupertino_icons: ^0.1.2
   dio: ^3.0.9  # 网络请求库
   webview_flutter: ^0.3.22+1  #webview插件
+  shared_preferences: ^0.5.8  #保存数据到本地持久化库
+  pull_to_refresh: ^1.6.1 #下啦刷新，上拉加载更多插件
+
 
 
 
