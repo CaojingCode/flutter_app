@@ -49,13 +49,20 @@ class TabBarPageFirstState extends BaseWidgetState<TabBarPageFirst> {
   ///轮播图
   getBanner() async {
     ///轮播图接口请求
-    Response responseBanner = await dio.get("banner/json");
+    await dio
+        .get("banner/json")
+        .then((value) => updateBannerData(value.toString()))
+        .catchError((onError) => DefaultAssetBundle.of(context)
+            .loadString("assets/banner.json")
+            .then((value) => updateBannerData(value.toString())));
+  }
 
+  updateBannerData(String jsonStr) {
     ///接口调用成功后更新数据需要调用setState()方法
     setState(() {
       ///轮播图实体解析
       BannerBaenEntity bannerEntity =
-          BannerBaenEntity().fromJson(jsonDecode(responseBanner.toString()));
+          BannerBaenEntity().fromJson(jsonDecode(jsonStr));
       _banners = bannerEntity.data;
     });
   }
@@ -65,22 +72,30 @@ class TabBarPageFirstState extends BaseWidgetState<TabBarPageFirst> {
     ///置顶文章接口请求
     await dio.get("article/top/json").then((value) {
       ///接口调用成功后更新数据需要调用setState()方法
-      setState(() {
-        ///置顶文章实体解析
-        topArticleBeanEntity =
-            TopArticleBeanEntity().fromJson(jsonDecode(value.toString()));
-        _articles = topArticleBeanEntity.data;
-        if (_articles.length == 0) {
-          topArticleBeanEntity.state = ViewState.empty;
-        } else {
-          topArticleBeanEntity.state = ViewState.idle;
-        }
-      });
+      updateTopArticle(value.toString());
     }).catchError((onError) {
-      setState(() {
-        topArticleBeanEntity.state = ViewState.error;
-        print("请求失败了:$onError");
-      });
+      DefaultAssetBundle.of(context)
+          .loadString("assets/top_article.json")
+          .then((value) => updateTopArticle(value.toString()));
+
+//      setState(() {
+//        topArticleBeanEntity.state = ViewState.error;
+//        print("请求失败了:$onError");
+//      });
+    });
+  }
+
+  updateTopArticle(String jsonStr) {
+    setState(() {
+      ///置顶文章实体解析
+      topArticleBeanEntity =
+          TopArticleBeanEntity().fromJson(jsonDecode(jsonStr));
+      _articles = topArticleBeanEntity.data;
+      if (_articles.length == 0) {
+        topArticleBeanEntity.state = ViewState.empty;
+      } else {
+        topArticleBeanEntity.state = ViewState.idle;
+      }
     });
   }
 
